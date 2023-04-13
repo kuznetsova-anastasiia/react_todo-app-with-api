@@ -7,7 +7,7 @@ type Props = {
   todos: Todo[];
   tempTodo: Todo | null;
   onDelete: (id: number) => void;
-  loadingIds: number[];
+  isTodoLoading: (id: number) => boolean;
   onUpdateTodo: (id: number, data: Partial<Todo>) => void;
   filterType: FilterType;
 };
@@ -16,7 +16,7 @@ export const TodoList: React.FC<Props> = ({
   todos,
   tempTodo,
   onDelete,
-  loadingIds,
+  isTodoLoading,
   onUpdateTodo,
   filterType,
 }) => {
@@ -38,19 +38,15 @@ export const TodoList: React.FC<Props> = ({
   return (
     <>
       <section className="todoapp__main">
-        {visibleTodos.map(todo => {
-          const isLoading = loadingIds.some(id => id === todo.id);
-
-          return (
-            <TodoElement
-              todo={todo}
-              key={todo.id}
-              onDelete={onDelete}
-              isLoading={isLoading}
-              onUpdateTodo={onUpdateTodo}
-            />
-          );
-        })}
+        {visibleTodos.map(todo => (
+          <TodoElement
+            todo={todo}
+            key={todo.id}
+            onDelete={onDelete}
+            isLoading={isTodoLoading(todo.id)}
+            onUpdateTodo={onUpdateTodo}
+          />
+        ))}
       </section>
 
       {tempTodo && (
