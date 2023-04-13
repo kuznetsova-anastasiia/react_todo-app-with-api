@@ -23,15 +23,15 @@ export const App: React.FC = () => {
   const [query, setQuery] = useState('');
   const [disabledInput, setDisabledInput] = useState(false);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [loadingIds, setLoadingIds] = useState<Map<number, boolean>>(new Map());
+  const [loadingIds, setLoadingIds] = useState<Set<number>>(new Set());
   const [filterType, setFilterType] = useState<FilterType>(FilterType.All);
   const [isLoading, setIsLoading] = useState(true);
 
   const addLoadingTodo = useCallback((id: number) => {
     setLoadingIds(state => {
-      state.set(id, true);
+      state.add(id);
 
-      return new Map(state);
+      return new Set(state);
     });
   }, []);
 
@@ -39,7 +39,7 @@ export const App: React.FC = () => {
     setLoadingIds(state => {
       state.delete(id);
 
-      return new Map(state);
+      return new Set(state);
     });
   }, []);
 
