@@ -23,9 +23,31 @@ export const App: React.FC = () => {
   const [query, setQuery] = useState('');
   const [disabledInput, setDisabledInput] = useState(false);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [loadingIds, setLoadingIds] = useState<number[]>([]);
+  const [loadingIds, setLoadingIds] = useState<Record<number, boolean>>({});
   const [filterType, setFilterType] = useState<FilterType>(FilterType.All);
   const [isLoading, setIsLoading] = useState(true);
+
+  const addLoadingTodo = useCallback((id: number) => {
+    setLoadingIds(state => ({
+      ...state,
+      [id]: true,
+    }));
+  }, []);
+
+  const removeLoadingTodo = useCallback((id: number) => {
+    setLoadingIds(state => {
+      const newState = { ...state };
+
+      delete newState[id];
+
+      return newState;
+    });
+  }, []);
+
+  const isTodoLoading = useCallback(
+    (id: number) => loadingIds[id] || false,
+    [loadingIds],
+  );
 
   const removeError = () => {
     setErrorMessage(Error.None);
@@ -62,7 +84,7 @@ export const App: React.FC = () => {
   }, []);
 
   const removeTodo = useCallback(async (id: number) => {
-    setLoadingIds(state => [...state, id]);
+    addLoadingTodo(id);
 
     try {
       await deleteTodo(id);
@@ -71,9 +93,9 @@ export const App: React.FC = () => {
     } catch {
       showError(Error.Delete);
     } finally {
-      setLoadingIds(state => state.filter(el => el !== id));
+      removeLoadingTodo(id);
     }
-  }, []);
+  }, [addLoadingTodo, removeLoadingTodo]);
 
   const removeCompleted = () => {
     const completed = todos.filter(todo => todo.completed);
@@ -107,7 +129,7 @@ export const App: React.FC = () => {
   };
 
   const handleUpdate = useCallback(async (id: number, data: Partial<Todo>) => {
-    setLoadingIds(state => [...state, id]);
+    addLoadingTodo(id);
 
     try {
       await patchTodo(id, data);
@@ -122,9 +144,9 @@ export const App: React.FC = () => {
     } catch {
       showError(Error.Update);
     } finally {
-      setLoadingIds(state => state.filter(el => el !== id));
+      removeLoadingTodo(id);
     }
-  }, []);
+  }, [addLoadingTodo, removeLoadingTodo]);
 
   const handleToggleAll = useCallback(() => {
     const areAllDone = todos.every(todo => todo.completed);
@@ -184,7 +206,7 @@ export const App: React.FC = () => {
                   todos={todos}
                   tempTodo={tempTodo}
                   onDelete={removeTodo}
-                  loadingIds={loadingIds}
+                  isTodoLoading={isTodoLoading}
                   onUpdateTodo={handleUpdate}
                   filterType={filterType}
                 />
