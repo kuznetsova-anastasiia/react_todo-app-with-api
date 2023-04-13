@@ -23,29 +23,28 @@ export const App: React.FC = () => {
   const [query, setQuery] = useState('');
   const [disabledInput, setDisabledInput] = useState(false);
   const [tempTodo, setTempTodo] = useState<Todo | null>(null);
-  const [loadingIds, setLoadingIds] = useState<Record<number, boolean>>({});
+  const [loadingIds, setLoadingIds] = useState<Map<number, boolean>>(new Map());
   const [filterType, setFilterType] = useState<FilterType>(FilterType.All);
   const [isLoading, setIsLoading] = useState(true);
 
   const addLoadingTodo = useCallback((id: number) => {
-    setLoadingIds(state => ({
-      ...state,
-      [id]: true,
-    }));
+    setLoadingIds(state => {
+      state.set(id, true);
+
+      return new Map(state);
+    });
   }, []);
 
   const removeLoadingTodo = useCallback((id: number) => {
     setLoadingIds(state => {
-      const newState = { ...state };
+      state.delete(id);
 
-      delete newState[id];
-
-      return newState;
+      return new Map(state);
     });
   }, []);
 
   const isTodoLoading = useCallback(
-    (id: number) => loadingIds[id] || false,
+    (id: number) => loadingIds.has(id),
     [loadingIds],
   );
 
